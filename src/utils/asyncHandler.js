@@ -1,9 +1,9 @@
 const AsyncHandler =(func) => {
-   return  async (res,req,next)=>{
-          await Promise.all(func(res,req,next)).catch((error)=>{
+   return  async (req,res,next)=>{
+          await Promise.resolve(func(req,res,next)).catch((error)=>{
               return next(error)
           })
     }
 }   
 
-
+export {AsyncHandler}
