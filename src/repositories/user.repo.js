@@ -10,7 +10,6 @@ const registerUser = async (body) => {
            `,
             [body.fullname,body.email,body.password,body.username,body.avatar,body.cover_image]
          )
-         console.log("Resgiter user", rows);
          
          return rows[0]
      } catch (error) {
@@ -20,6 +19,7 @@ const registerUser = async (body) => {
 const findUserbyEmailandID= async (email,username) => {
           const {rows} = await db.query(
                     `SELECT * FROM users WHERE email=$1 OR username=$2
+                     
                     `,  
                     [email,username]
                     )
@@ -32,4 +32,25 @@ const findUserbyEmailandID= async (email,username) => {
 }
 
 
-export default {registerUser,findUserbyEmailandID}
+
+const loginUser = async ({email,refresh_token}) => {
+   // email
+   // password
+   //  accesstoken and refresToken 
+   
+   const query = `
+       UPDATE users
+       SET refresh_token = $1
+       WHERE $2
+      `
+   const values = [refresh_token,email]
+   const {rows} = await db.query(query,values)
+   return rows[0]
+
+}
+
+
+
+
+
+export default {registerUser,findUserbyEmailandID,loginUser}

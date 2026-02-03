@@ -2,6 +2,7 @@ import userRepo from "../repositories/user.repo.js";
 import bcrypt from "bcrypt"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiError } from "../utils/ApiError.js";
+import  jwt from "jsonwebtoken"
 
 const registerUser =async (req,res) => {
     let {fullname,email,password,username} =req.body;
@@ -15,7 +16,8 @@ const registerUser =async (req,res) => {
   }
   password =await  bcrypt.hash(password,10) 
   const existedUser = await userRepo.findUserbyEmailandID(email,username);
-
+   console.log(existedUser);
+   
   if (existedUser) {
     throw new ApiError(409, "User email or username already exists");
   }
@@ -56,4 +58,23 @@ const registerUser =async (req,res) => {
   return user_plain;
 }
 
+const generateAccessAndRefreshToken =  async (id) => {
+     const access_token =await jwt.sign(id,process.env.ACCESS_TOKEN_KEY,process.env.ACCESS_TOKEN_EXPIRY)
+     const refresh_token =await jwt.sign(id,process.env.REFRESH_TOKEN_KEY,process.env.REFRESH_TOKEN_EXPIRY)
+     return {access_token,refresh_token}
+
+    }
+
+const loginUser =async (req,res) => {
+    let {email,password,username} =req?.body;
+
+    if (!(email || username)) {
+      throw new ApiError(400, "All fields are required");
+    }
+    const  {access_token,refresh_token} = await generateAccessAndRefreshToken()
+
+
+
+ 
+} 
 export default {registerUser}
