@@ -15,7 +15,7 @@ const registerUser= AsyncHandler(async (req,res)=>{
 const login= AsyncHandler(async (req,res)=>{     
      
 
-     const  {user,accessToken,refreshToken}  =await userService.login(req,res)
+     const  {userdata,access_token,refresh_token}  =await userService.loginUser(req,res)
       
      const options= {
      // Cookie valid for 24 hours (1 day)
@@ -25,11 +25,11 @@ const login= AsyncHandler(async (req,res)=>{
      }
      return  res
      .status(200)
-     .cookie('accessToken', accessToken, options)
-     .cookie('refreshToken', refreshToken, options)
+     .cookie('accessToken', access_token, options)
+     .cookie('refreshToken', refresh_token, options)
      .json(
      
-        new ApiResponse(200,{user,refreshToken},"User Loged in  successfullya")
+        new ApiResponse(200,{userdata,refresh_token},"User Loged in  successfullya")
      )
    
 })

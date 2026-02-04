@@ -59,8 +59,8 @@ const registerUser =async (req,res) => {
 }
 
 const generateAccessAndRefreshToken =  async (id) => {
-     const access_token =await jwt.sign(id,process.env.ACCESS_TOKEN_KEY,process.env.ACCESS_TOKEN_EXPIRY)
-     const refresh_token =await jwt.sign(id,process.env.REFRESH_TOKEN_KEY,process.env.REFRESH_TOKEN_EXPIRY)
+     const access_token = jwt.sign({id},process.env.ACCESS_TOKEN_KEY,{expiresIn:process.env.ACCESS_TOKEN_EXPIRY})
+     const refresh_token = jwt.sign({id},process.env.REFRESH_TOKEN_KEY,{expiresIn:process.env.REFRESH_TOKEN_EXPIRY})
      return {access_token,refresh_token}
 
     }
@@ -71,10 +71,49 @@ const loginUser =async (req,res) => {
     if (!(email || username)) {
       throw new ApiError(400, "All fields are required");
     }
-    const  {access_token,refresh_token} = await generateAccessAndRefreshToken()
+    const user = await userRepo.findUserbyEmailandID(email,username)
 
+    if (!user) {
+          throw new ApiError(400, "User did'nt found");
+    }
+    
+    if (!password) {
+          throw new ApiError(400, "password is required");
+    }
+    
+    const isPasswordCorrect =await userRepo.isPasswordCorrect(user?.password,password)
+    console.log({"hasHpassword" : user?.id , "password": password ,"cocrect passow":isPasswordCorrect
 
+    });
+    
+    if (!isPasswordCorrect) {
+          throw new ApiError(400, "wronge password !");
+    }
 
+    const  {access_token,refresh_token} = await generateAccessAndRefreshToken(user?.id)
+    const userdata=  await userRepo.loginUser(user?.id,refresh_token)
+    console.log({"USER DATA " : userdata ,access_token,refresh_token});
+    
+    if (!userdata) {
+          throw new ApiError(400, "usre does not found!");
+    }
+   
+    
+   return {userdata,access_token,refresh_token}
  
-} 
-export default {registerUser}
+}
+
+const logOut = async (req,res) => {
+       const {id} = req?.user
+      //  console.log({id});
+       
+       if (!id) {
+          throw new ApiError(406,"User does not Login")
+       } 
+       await userRepo.logOut(id)
+       return null
+}  
+
+
+
+export default {registerUser,loginUser,logOut}

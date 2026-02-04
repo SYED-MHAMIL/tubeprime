@@ -1,6 +1,5 @@
 import { db } from "../db/index.js";
-import { ApiError } from "../utils/ApiError.js";
-
+import bcrypt from "bcrypt"
 const registerUser = async (body) => {
      try {
          const {rows}  =await  db.query(
@@ -30,27 +29,52 @@ const findUserbyEmailandID= async (email,username) => {
                     }
                     return rows[0]
 }
+const findUserbyID= async (id) => {
+          const {rows} = await db.query(
+                    `SELECT * FROM users WHERE id=$1 
+                    `,  
+                    [id]
+                    )
+                    console.log("find row" , rows);
+                    
+                    if (!rows) {
+                             return null
+                    }
+                    return rows[0]
+}
+const isPasswordCorrect = async (hash,password) => {
+      const ispassword = await bcrypt.compare(password,hash)
+      return ispassword   
+}
 
+const loginUser = async (id, refresh_token) => {
+  const query = `
+    UPDATE users
+    SET refresh_token = $1
+    WHERE id = $2
+    RETURNING *
+  `
 
+  const values = [refresh_token, id]
 
-const loginUser = async ({email,refresh_token}) => {
-   // email
-   // password
-   //  accesstoken and refresToken 
-   
-   const query = `
-       UPDATE users
-       SET refresh_token = $1
-       WHERE $2
-      `
-   const values = [refresh_token,email]
-   const {rows} = await db.query(query,values)
-   return rows[0]
+  const { rows } = await db.query(query, values)
+  return rows[0]
+}
 
+const logOut = async (id) => {
+  const query = `
+    UPDATE users
+    SET refresh_token = $1
+    WHERE id = $2
+    RETURNING *
+  `
+  const values = [undefined, id]
+
+  const { rows } = await db.query(query, values)
+  return rows[0]
 }
 
 
 
 
-
-export default {registerUser,findUserbyEmailandID,loginUser}
+export default {registerUser,findUserbyEmailandID,loginUser,isPasswordCorrect,logOut,findUserbyID}

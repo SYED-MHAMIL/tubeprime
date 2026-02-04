@@ -3,6 +3,7 @@ import express from "express";
 import { router } from "./routes/index.route.js";
 import { ApiError } from "./utils/ApiError.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(
@@ -12,6 +13,7 @@ app.use(
 );
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
+app.use(cookieParser())
 app.use("/api/uploads", express.static("uploads"))
 app.use("/api",router)
 
